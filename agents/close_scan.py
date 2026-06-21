@@ -9,6 +9,10 @@ e escreve o briefing markdown no repositório.
 
 from __future__ import annotations
 
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 from agents import run_scan
 from core import briefing
 from core.airtable_writer import AirtableClient

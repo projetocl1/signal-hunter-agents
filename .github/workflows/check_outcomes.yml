@@ -1,0 +1,29 @@
+name: check_outcomes
+
+on:
+  schedule:
+    # Durante horário de mercado (NYSE: 14:30–21:00 UTC), atualiza a cada 2h.
+    - cron: "0 15 * * 1-5"   # 15:00 UTC — abertura de mercado
+    - cron: "0 17 * * 1-5"   # 17:00 UTC — meio da sessão
+    - cron: "0 19 * * 1-5"   # 19:00 UTC — última hora
+    - cron: "30 21 * * 1-5"  # 21:30 UTC — after-hours (30min após fecho)
+  workflow_dispatch:           # execução manual a qualquer momento
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Atualizar outcomes e P&L
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: python -m scripts.check_outcomes

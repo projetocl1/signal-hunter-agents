@@ -9,6 +9,11 @@ Uso:
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 from core.outcome_tracker import run_update
 
