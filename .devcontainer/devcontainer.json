@@ -6,11 +6,13 @@
   "portsAttributes": {
     "8501": {
       "label": "Signal Hunter Dashboard",
-      "onAutoForward": "openBrowserOnce"
+      "onAutoForward": "openBrowserOnce",
+      "visibility": "public"
     },
     "8000": {
       "label": "Signal Hunter API",
-      "onAutoForward": "silent"
+      "onAutoForward": "silent",
+      "visibility": "public"
     }
   },
 
