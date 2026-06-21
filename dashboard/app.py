@@ -6,6 +6,8 @@ Execução:
 """
 from __future__ import annotations
 
+import base64
+import json
 import os
 import sys
 from datetime import datetime
@@ -18,11 +20,73 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 from dashboard.data import compute_kpis, load_signals  # noqa: E402
+
+# ── PWA — instalar como app no tablet/telemóvel ────────────────────────────
+_SVG_ICON = base64.b64encode(b"""
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="90" fill="#0f1117"/>
+  <rect x="80" y="300" width="60" height="140" rx="8" fill="#4285F4"/>
+  <rect x="180" y="220" width="60" height="220" rx="8" fill="#4285F4"/>
+  <rect x="280" y="150" width="60" height="290" rx="8" fill="#00C851"/>
+  <rect x="380" y="80"  width="60" height="360" rx="8" fill="#00C851"/>
+  <polyline points="110,310 210,230 310,160 410,90"
+            stroke="#FFD700" stroke-width="18" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="390,60 440,110 410,90" fill="#FFD700"/>
+</svg>
+""".strip()).decode()
+
+_MANIFEST = base64.b64encode(json.dumps({
+    "name": "Signal Hunter",
+    "short_name": "Signals",
+    "description": "Dashboard de catalisadores de mercado",
+    "icons": [
+        {"src": f"data:image/svg+xml;base64,{_SVG_ICON}", "sizes": "512x512",
+         "type": "image/svg+xml", "purpose": "any maskable"},
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#0f1117",
+    "background_color": "#0f1117",
+    "orientation": "portrait-primary",
+}).encode()).decode()
+
+
+def _inject_pwa() -> None:
+    """Injeta manifesto PWA e meta tags Apple no <head> da página."""
+    icon_url = f"data:image/svg+xml;base64,{_SVG_ICON}"
+    manifest_url = f"data:application/manifest+json;base64,{_MANIFEST}"
+    components.html(f"""
+    <script>
+    (function() {{
+        var h = window.parent.document.head;
+        if (h.querySelector('link[rel="manifest"]')) return;  // já injectado
+        var lm = document.createElement('link');
+        lm.rel = 'manifest'; lm.href = '{manifest_url}';
+        h.appendChild(lm);
+        var lt = document.createElement('link');
+        lt.rel = 'apple-touch-icon'; lt.href = '{icon_url}';
+        h.appendChild(lt);
+        [
+            ['apple-mobile-web-app-capable',        'yes'],
+            ['apple-mobile-web-app-title',          'Signal Hunter'],
+            ['apple-mobile-web-app-status-bar-style','black-translucent'],
+            ['mobile-web-app-capable',              'yes'],
+            ['theme-color',                         '#0f1117'],
+        ].forEach(function(m) {{
+            var el = document.createElement('meta');
+            el.name = m[0]; el.content = m[1];
+            h.appendChild(el);
+        }});
+    }})();
+    </script>
+    """, height=0, scrolling=False)
 
 # ── Paleta de cores ────────────────────────────────────────────────────────
 OUTCOME_COLORS = {
@@ -46,6 +110,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+_inject_pwa()
 
 st.markdown(
     """
