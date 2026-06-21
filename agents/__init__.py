@@ -11,7 +11,12 @@ from core import airtable_writer, classifier, news_fetcher, ticker_universe
 from core.durability_check import evaluate
 
 
-def run_scan(focus: str, expand: bool = False, max_items: int = 25) -> list[dict]:
+def run_scan(
+    focus: str,
+    expand: bool = False,
+    max_items: int = 25,
+    source_domains: list[str] | None = None,
+) -> list[dict]:
     """
     Executa um scan completo:
       navegar fontes → classificar → durabilidade → convergência → scoring →
@@ -25,7 +30,11 @@ def run_scan(focus: str, expand: bool = False, max_items: int = 25) -> list[dict
     universe = ticker_universe.get_universe(client, expand=expand)
     print(f"[scan] universo: {len(universe)} tickers (expand={expand})")
 
-    items = news_fetcher.fetch_news(client, focus, universe, max_items=max_items)
+    items = news_fetcher.fetch_news(
+        client, focus, universe,
+        max_items=max_items,
+        allowed_domains=source_domains,
+    )
     print(f"[scan] candidatos recolhidos: {len(items)}")
 
     results: list[dict] = []

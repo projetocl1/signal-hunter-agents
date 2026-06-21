@@ -26,7 +26,7 @@ class Classification(BaseModel):
     """Estrutura exacta do output pedido na spec."""
 
     ticker: str = Field(description="Símbolo do ticker, ex: NVDA")
-    signal_type: Literal["analyst", "earnings", "product", "macro", "rotation"]
+    signal_type: Literal["analyst", "earnings", "product", "macro", "rotation", "insider", "options"]
     catalyst_strength: int = Field(ge=1, le=10, description="Força 1-10")
     horizon: Literal["3d", "10d", "30d", "90d"]
     durability_12h: bool = Field(
@@ -36,6 +36,12 @@ class Classification(BaseModel):
         description="Estimativa do modelo (a convergência real vem do Airtable)"
     )
     reasoning: str = Field(description="Máximo 2 frases")
+    # campos opcionais para insider e options (None quando não aplicável)
+    insider_name: str | None = Field(default=None, description="Nome do insider (CEO, CFO, Director)")
+    insider_title: str | None = Field(default=None, description="Título do insider")
+    insider_amount_usd: int | None = Field(default=None, description="Valor em USD da compra de insider")
+    options_premium_usd: int | None = Field(default=None, description="Premium total em USD do fluxo de opções")
+    options_type: Literal["call", "put"] | None = Field(default=None, description="Tipo de opção")
 
 
 # ── Prompt ──────────────────────────────────────────────────────────────────
@@ -58,6 +64,28 @@ REGRAS DE CLASSIFICAÇÃO:
 - convergence_detected: a tua melhor estimativa de se há outro sinal recente
   no mesmo ticker (será confirmado depois contra a base de dados).
 - reasoning: no máximo 2 frases, em português.
+
+REGRAS ESPECÍFICAS — signal_type="insider":
+- Usa APENAS para open-market purchases confirmadas (Form 4 SEC filing).
+- Exclui: option exercises, planned 10b5-1, vendas, heranças.
+- horizon = 30d se compra isolada; 90d se cluster (2+ insiders no mesmo mês).
+- catalyst_strength:
+    10 = CEO/CFO/Founder comprou >$1M ou cluster de 3+ insiders
+    8-9 = C-suite comprou $500K-$1M ou cluster de 2 insiders
+    6-7 = Director comprou $200K-$500K
+    ≤5  = <$200K ou título não executivo
+- Preenche insider_name, insider_title, insider_amount_usd.
+
+REGRAS ESPECÍFICAS — signal_type="options":
+- Usa APENAS para fluxo incomum confirmado: sweeps, blocos grandes OTM,
+  volume/OI > 5x. Não classificar hedges de índices ou cobertura rotineira.
+- horizon = 3d para opções com expiry < 2 semanas; 10d para 2-6 semanas.
+- catalyst_strength:
+    10 = Sweep >$1M OTM, expiry < 2 semanas, volume/OI >10x
+    8-9 = Bloco >$500K OTM, ou sweep cruzado multi-exchange
+    6-7 = Bloco $200K-$500K, ou calls OTM moderadas
+    ≤5  = <$200K, ou contexto ambíguo
+- Preenche options_premium_usd, options_type.
 
 Sê conservador: é preferível descartar (durability_12h=false) do que deixar
 passar ruído."""

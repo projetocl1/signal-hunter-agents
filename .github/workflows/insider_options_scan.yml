@@ -1,0 +1,75 @@
+name: insider_options_scan
+
+on:
+  schedule:
+    # Insider buying: Form 4 filings chegam de manhã — 07:30 UTC (seg-sex)
+    - cron: "30 7 * * 1-5"
+    # Options flow abertura: prime-time de sweeps — 14:30 UTC (seg-sex)
+    - cron: "30 14 * * 1-5"
+    # Options flow meio-sessão: actividade do almoço US — 18:00 UTC (seg-sex)
+    - cron: "0 18 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: "Que scan correr (insider | options | both)"
+        required: false
+        default: "both"
+
+jobs:
+  insider:
+    # Corre no cron das 07:30 OU quando dispatch pede insider/both
+    if: |
+      github.event_name == 'workflow_dispatch' && (
+        github.event.inputs.scan_type == 'insider' ||
+        github.event.inputs.scan_type == 'both'
+      ) || (
+        github.event_name == 'schedule' &&
+        startsWith(github.event.schedule, '30 7')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Scan insider buying
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: python -m agents.insider_scan
+
+  options:
+    # Corre nos crons das 14:30 e 18:00 OU quando dispatch pede options/both
+    if: |
+      github.event_name == 'workflow_dispatch' && (
+        github.event.inputs.scan_type == 'options' ||
+        github.event.inputs.scan_type == 'both'
+      ) || (
+        github.event_name == 'schedule' && (
+          startsWith(github.event.schedule, '30 14') ||
+          startsWith(github.event.schedule, '0 18')
+        )
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Scan options flow
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: python -m agents.options_scan

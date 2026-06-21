@@ -29,6 +29,10 @@ SOURCES = {
     "prnewswire.com": "product announcements / PR",
     "marketwatch.com": "macro e geopolítico",
     "slickcharts.com": "sector performance e rotation",
+    # Novos coletores
+    "openinsider.com": "insider buying — compras de insiders com $500K+",
+    "barchart.com": "unusual options activity — sweeps e volume anómalo",
+    "unusualwhales.com": "fluxo de opções incomum — smart money flow",
 }
 
 # Domínios passados à web search da Claude (allowlist).
@@ -51,11 +55,12 @@ EXPANSION = {
 }
 
 # ── Tipos de catalisador ───────────────────────────────────────────────────
-SIGNAL_TYPES = ("analyst", "earnings", "product", "macro", "rotation")
+SIGNAL_TYPES = ("analyst", "earnings", "product", "macro", "rotation", "insider", "options")
 HORIZONS = ("3d", "10d", "30d", "90d")
 
 # Catalisadores que PASSAM o filtro (orientação para o classificador).
 CATALYSTS_PASS = [
+    # --- analyst / earnings / product ---
     "Analyst initiation (novo banco a cobrir)",
     "Price target raise >= 20% numa única revisão",
     "Earnings EPS beat >= 20% vs estimativa",
@@ -65,17 +70,39 @@ CATALYSTS_PASS = [
     "New product com revenue guidance associado",
     "Sector leader subiu >= 10% → detectar laggards",
     "Competitor capacity expansion announcement",
+    # --- insider buying ---
+    "Cluster buy: 2+ insiders compraram no mesmo mês",
+    "CEO/CFO/Founder open-market purchase >= $500K",
+    "Director purchase >= $1M (open market, não option exercise)",
+    "Compra em dias de queda do mercado >= 3% (contra-corrente)",
+    "Compra representa >= 1% das acções totais do insider",
+    # --- unusual options ---
+    "OTM call sweep >= $1M premium, expiry < 3 semanas",
+    "Volume/OI ratio > 10x na mesma strike (call OTM)",
+    "Sweep cruzado em múltiplas exchanges (agressivo)",
+    "Bloco de calls > $500K sem notícias públicas visíveis",
+    "Put/call ratio invertido abaixo de 0.3 em contexto de queda",
 ]
 
 # Catalisadores que NÃO passam o filtro.
 CATALYSTS_REJECT = [
     "Dividendo regular",
     "Insider sale rotineira",
+    "Insider option exercise automático (10b5-1 plan)",
     "Rating mantido sem mudança de target",
     "Press release de marketing sem números",
     "Earnings in-line sem surpresa",
     "Rumor não confirmado por fonte primária",
+    "Options volume < 2x OI sem sweeps",
+    "Calls deep ITM de cobertura (hedge known)",
+    "Options em ETFs broad-market (SPY, QQQ, IWM)",
 ]
+
+# ── Thresholds específicos por tipo ──────────────────────────────────────────
+INSIDER_MIN_USD = 500_000        # compra mínima para qualificar insider
+INSIDER_CLUSTER_MIN = 2          # mínimo de insiders para cluster buy
+OPTIONS_MIN_PREMIUM = 500_000    # premium mínimo para qualificar options flow
+OPTIONS_VOL_OI_MIN = 3.0         # rácio volume/OI mínimo
 
 # ── Regras de scoring ──────────────────────────────────────────────────────
 # durability_12h = false  → descarta sempre (tratado em durability_check)

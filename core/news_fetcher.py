@@ -45,6 +45,7 @@ def fetch_news(
     universe: list[str] | None = None,
     max_items: int = 25,
     max_turns: int = 6,
+    allowed_domains: list[str] | None = None,
 ) -> list[dict]:
     """
     Navega as fontes e devolve candidatos a catalisador.
@@ -92,7 +93,7 @@ sem números."""
 
     messages = [{"role": "user", "content": user}]
     final_text = ""
-    allowed = list(config.SOURCE_DOMAINS)
+    allowed = list(allowed_domains) if allowed_domains else list(config.SOURCE_DOMAINS)
 
     for _ in range(max_turns):
         try:

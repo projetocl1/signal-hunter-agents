@@ -101,6 +101,18 @@ TYPE_COLORS = {
     "product": "#4ECDC4",
     "macro": "#FFE66D",
     "rotation": "#A8E6CF",
+    "insider": "#C084FC",  # roxo — informação privilegiada
+    "options": "#FB923C",  # laranja — smart money flow
+}
+
+TYPE_EMOJI = {
+    "analyst": "📈",
+    "earnings": "💰",
+    "product": "🚀",
+    "macro": "🌐",
+    "rotation": "🔄",
+    "insider": "🕵️",
+    "options": "🎯",
 }
 
 # ── Configuração da página ─────────────────────────────────────────────────
@@ -133,7 +145,7 @@ with st.sidebar:
     days = st.slider("Período (dias)", min_value=7, max_value=90, value=30, step=7)
     min_score = st.slider("Score mínimo", min_value=0, max_value=13, value=0)
 
-    all_types = ["analyst", "earnings", "product", "macro", "rotation"]
+    all_types = ["analyst", "earnings", "product", "macro", "rotation", "insider", "options"]
     sel_types = st.multiselect("Tipos de sinal", all_types, default=all_types)
 
     all_horizons = ["3d", "10d", "30d", "90d"]
@@ -185,7 +197,7 @@ st.divider()
 if not df_raw.empty:
     kpi = compute_kpis(df_raw)
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(8)
     c1.metric("📅 Sinais hoje", kpi["sinais_hoje"])
     c2.metric(
         "🔴 Alta prioridade",
@@ -209,6 +221,17 @@ if not df_raw.empty:
         kpi["convergencias_ativas"],
         help="Posições abertas com convergência detectada",
     )
+    # KPIs novos — insider e options
+    insider_today = int(df_raw[df_raw["signal_type"] == "insider"]["date_only"].apply(
+        lambda d: str(d)[:10] == datetime.now().strftime("%Y-%m-%d")
+        if pd.notna(d) else False
+    ).sum()) if "signal_type" in df_raw.columns and "date_only" in df_raw.columns else 0
+    options_today = int(df_raw[df_raw["signal_type"] == "options"]["date_only"].apply(
+        lambda d: str(d)[:10] == datetime.now().strftime("%Y-%m-%d")
+        if pd.notna(d) else False
+    ).sum()) if "signal_type" in df_raw.columns and "date_only" in df_raw.columns else 0
+    c7.metric("🕵️ Insider buys", insider_today, help="Compras de insiders detectadas hoje")
+    c8.metric("🎯 Options flow", options_today, help="Fluxo de opções incomum detectado hoje")
 else:
     st.info("Sem dados para o período seleccionado. Verifica as credenciais do Airtable no .env")
 
@@ -439,6 +462,85 @@ if not df.empty:
         use_container_width=True,
         height=400,
     )
+
+    # ── Insider Buying ─────────────────────────────────────────────────────
+    insider_df = df[df["signal_type"] == "insider"].copy() if "signal_type" in df.columns else pd.DataFrame()
+    options_df = df[df["signal_type"] == "options"].copy() if "signal_type" in df.columns else pd.DataFrame()
+
+    if not insider_df.empty or not options_df.empty:
+        st.divider()
+        col_ins, col_opt = st.columns(2)
+
+        with col_ins:
+            st.subheader("🕵️ Insider Buying")
+            if not insider_df.empty:
+                ins_cols = [c for c in ["date_only", "ticker", "raw_score", "horizon", "headline", "outcome"] if c in insider_df.columns]
+                ins_rename = {"date_only": "Data", "ticker": "Ticker", "raw_score": "Score", "horizon": "Horizonte", "headline": "Detalhe", "outcome": "Estado"}
+                st.dataframe(
+                    insider_df[ins_cols].rename(columns=ins_rename).sort_values("Score", ascending=False),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                # Gráfico de barras — insiders por ticker
+                if "ticker" in insider_df.columns:
+                    fig_ins = px.bar(
+                        insider_df["ticker"].value_counts().reset_index(),
+                        x="ticker",
+                        y="count",
+                        color_discrete_sequence=["#C084FC"],
+                        title="Compras por ticker",
+                    )
+                    fig_ins.update_layout(margin=dict(t=30, b=10, l=0, r=0), height=200, showlegend=False, xaxis_title="", yaxis_title="Compras")
+                    st.plotly_chart(fig_ins, use_container_width=True)
+            else:
+                st.caption("Nenhuma compra de insider no período com os filtros actuais.")
+
+        with col_opt:
+            st.subheader("🎯 Options Flow Incomum")
+            if not options_df.empty:
+                opt_cols = [c for c in ["date_only", "ticker", "raw_score", "horizon", "headline", "outcome"] if c in options_df.columns]
+                opt_rename = {"date_only": "Data", "ticker": "Ticker", "raw_score": "Score", "horizon": "Horizonte", "headline": "Detalhe", "outcome": "Estado"}
+                st.dataframe(
+                    options_df[opt_cols].rename(columns=opt_rename).sort_values("Score", ascending=False),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+                # Timeline de options flow
+                if "date_only" in options_df.columns:
+                    daily_opt = options_df.groupby("date_only").size().reset_index(name="count")
+                    daily_opt["date_only"] = daily_opt["date_only"].astype(str)
+                    fig_opt = px.bar(
+                        daily_opt,
+                        x="date_only",
+                        y="count",
+                        color_discrete_sequence=["#FB923C"],
+                        title="Options flow por dia",
+                    )
+                    fig_opt.update_layout(margin=dict(t=30, b=10, l=0, r=0), height=200, showlegend=False, xaxis_title="", yaxis_title="Sinais")
+                    st.plotly_chart(fig_opt, use_container_width=True)
+            else:
+                st.caption("Nenhum options flow incomum no período com os filtros actuais.")
+
+        # Mega-convergência alert
+        insider_tickers = set(insider_df["ticker"].dropna()) if not insider_df.empty and "ticker" in insider_df.columns else set()
+        options_tickers = set(options_df["ticker"].dropna()) if not options_df.empty and "ticker" in options_df.columns else set()
+        mega = insider_tickers & options_tickers
+        if mega:
+            st.markdown(
+                f"""
+                <div style='background: linear-gradient(135deg, #7c3aed, #ea580c);
+                            padding: 16px 20px; border-radius: 10px; margin: 12px 0;'>
+                    <h3 style='color: white; margin: 0 0 8px 0;'>⚡ MEGA-CONVERGÊNCIA DETECTADA</h3>
+                    <p style='color: #fde68a; margin: 0; font-size: 18px; font-weight: bold;'>
+                        {' &nbsp;·&nbsp; '.join(sorted(mega))}
+                    </p>
+                    <p style='color: #e2e8f0; margin: 8px 0 0 0; font-size: 13px;'>
+                        Insiders a comprar E smart money em opções no mesmo ticker — sinal de máxima convicção.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     st.divider()
 

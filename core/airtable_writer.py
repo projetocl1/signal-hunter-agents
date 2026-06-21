@@ -138,6 +138,39 @@ class AirtableClient:
         return resp.json()["records"][0]["id"]
 
 
+def _enrich_headline(signal: dict) -> str:
+    """Enriquece a headline com dados estruturados de insider/options."""
+    base = signal.get("headline", "")
+    stype = signal.get("signal_type", "")
+
+    if stype == "insider":
+        parts = []
+        name = signal.get("insider_name") or signal.get("insiderName")
+        title = signal.get("insider_title") or signal.get("insiderTitle")
+        amount = signal.get("insider_amount_usd") or signal.get("insiderAmountUsd")
+        if name:
+            parts.append(name)
+        if title:
+            parts.append(f"({title})")
+        if amount:
+            parts.append(f"${amount:,}")
+        extra = " — " + " ".join(parts) if parts else ""
+        return base + extra
+
+    if stype == "options":
+        parts = []
+        otype = signal.get("options_type") or signal.get("optionsType")
+        premium = signal.get("options_premium_usd") or signal.get("optionsPremiumUsd")
+        if otype:
+            parts.append(otype.upper())
+        if premium:
+            parts.append(f"${premium:,} premium")
+        extra = " — " + " ".join(parts) if parts else ""
+        return base + extra
+
+    return base
+
+
 def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
     """
     Constrói o dict de campos do Airtable a partir de um sinal classificado
@@ -153,7 +186,7 @@ def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
         "horizon": signal.get("horizon", ""),
         "durability_12h": bool(signal.get("durability_12h", False)),
         "convergence": bool(convergence),
-        "headline": signal.get("headline", ""),
+        "headline": _enrich_headline(signal),
         "source": source,
         "raw_score": int(scored.final_score),
         "alerted": scored.priority == "high",
