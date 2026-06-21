@@ -439,3 +439,32 @@ if not df.empty:
         use_container_width=True,
         height=400,
     )
+
+    st.divider()
+
+    # ── Aprendizagem — Performance histórica ───────────────────────────────
+    st.subheader("🧠 Aprendizagem do sistema")
+    try:
+        from core.performance_analyzer import load_cache
+        perf = load_cache()
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            st.metric("Sinais fechados analisados", perf.get("total_closed", 0))
+            if perf.get("sufficient_data"):
+                ts = perf.get("generated_at", "")[:10]
+                st.caption(f"Pesos adaptativos ACTIVOS — última análise: {ts}")
+                st.success(f"Top fontes: {', '.join(perf.get('top_sources', [])) or '—'}")
+                st.success(f"Top combinações: {', '.join(perf.get('top_combinations', [])) or '—'}")
+            else:
+                st.info(perf.get("notes", "A aguardar dados suficientes."))
+        with col_p2:
+            if perf.get("sufficient_data") and perf.get("by_type"):
+                perf_rows = [
+                    {"Tipo": k, "Hit Rate": f"{v['hit_rate']:.0%}", "P&L Médio": f"{v['avg_pnl']:+.1f}%", "Total": v["total"]}
+                    for k, v in perf["by_type"].items()
+                ]
+                st.dataframe(pd.DataFrame(perf_rows), use_container_width=True, hide_index=True)
+            else:
+                st.caption("Tabela disponível após 10+ sinais fechados.")
+    except Exception as e:
+        st.caption(f"Performance cache indisponível: {e}")

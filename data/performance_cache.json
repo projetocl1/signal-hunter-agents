@@ -1,0 +1,12 @@
+{
+  "generated_at": null,
+  "total_closed": 0,
+  "sufficient_data": false,
+  "by_source": {},
+  "by_type": {},
+  "by_horizon": {},
+  "by_type_horizon": {},
+  "top_sources": [],
+  "top_combinations": [],
+  "notes": "Apenas 0 sinais fechados (mínimo: 10). Pesos neutros activos — sistema aprenderá com mais dados."
+}

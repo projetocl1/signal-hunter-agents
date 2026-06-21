@@ -20,6 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from . import config
+from .performance_analyzer import performance_bonus
 
 
 @dataclass
@@ -55,8 +56,14 @@ def evaluate(signal: dict, convergence: bool) -> ScoredSignal:
             reason="durability_12h=False — sinal não sobrevive 12h, descartado.",
         )
 
-    # Regras 2 + 3 — score base + bónus de convergência.
-    final_score = strength + (config.CONVERGENCE_BONUS if convergence else 0)
+    # Regras 2 + 3 — score base + bónus de convergência + bónus de performance.
+    conv_bonus = config.CONVERGENCE_BONUS if convergence else 0
+    perf_bonus = performance_bonus(
+        signal.get("signal_type", ""),
+        signal.get("horizon", ""),
+        signal.get("source", ""),
+    )
+    final_score = strength + conv_bonus + perf_bonus
 
     # Regra 4 — thresholds.
     if final_score >= config.SCORE_HIGH_PRIORITY:
@@ -70,7 +77,9 @@ def evaluate(signal: dict, convergence: bool) -> ScoredSignal:
         reason = f"Score final {final_score} < {config.SCORE_MONITOR_MIN} — descartado."
 
     if convergence and kept:
-        reason += " Convergência detectada (+%d)." % config.CONVERGENCE_BONUS
+        reason += f" Convergência detectada (+{conv_bonus})."
+    if perf_bonus > 0 and kept:
+        reason += f" Bónus de performance histórica (+{perf_bonus})."
 
     return ScoredSignal(
         kept=kept,
