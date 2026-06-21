@@ -25,10 +25,21 @@ pip install -r requirements.txt -q
 nohup streamlit run dashboard/app.py \
     --server.port 8501 \
     --server.headless true \
+    --server.address 0.0.0.0 \
     --server.enableCORS false \
     --server.enableXsrfProtection false \
     > "$LOG_FILE" 2>&1 &
 
 echo $! > "$PID_FILE"
 echo "[dashboard] iniciado (PID $(cat $PID_FILE)) → porta 8501"
+
+# Aguardar servidor arrancar e forçar porta pública
+sleep 6
+if gh codespace ports visibility 8501:public -c "${CODESPACE_NAME:-}" 2>/dev/null; then
+    echo "[dashboard] porta 8501 → public ✓"
+else
+    echo "[dashboard] aviso: não foi possível forçar porta pública (normal em rebuild)"
+fi
+
+echo "[dashboard] URL: https://${CODESPACE_NAME:-localhost}-8501.app.github.dev"
 echo "[dashboard] logs em $LOG_FILE"
