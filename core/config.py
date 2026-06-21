@@ -27,7 +27,7 @@ SOURCES = {
     "sec.gov": "8-K filings (EDGAR)",
     "globenewswire.com": "product announcements / PR",
     "prnewswire.com": "product announcements / PR",
-    "reuters.com": "macro e geopolítico",
+    "marketwatch.com": "macro e geopolítico",
     "slickcharts.com": "sector performance e rotation",
 }
 

@@ -23,6 +23,16 @@ import requests
 
 from . import config
 
+
+def _fetch_price(ticker: str) -> float | None:
+    if not ticker:
+        return None
+    try:
+        import yfinance as yf
+        return yf.Ticker(ticker).fast_info.last_price
+    except Exception:
+        return None
+
 API_BASE = "https://api.airtable.com/v0"
 
 
@@ -133,9 +143,11 @@ def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
     Constrói o dict de campos do Airtable a partir de um sinal classificado
     e do resultado do scoring (objecto ScoredSignal).
     """
-    return {
+    ticker = signal.get("ticker", "")
+    entry_price = _fetch_price(ticker)
+    record: dict = {
         "date": datetime.now(timezone.utc).isoformat(),
-        "ticker": signal.get("ticker", ""),
+        "ticker": ticker,
         "signal_type": signal.get("signal_type", ""),
         "catalyst_strength": int(signal.get("catalyst_strength", 0)),
         "horizon": signal.get("horizon", ""),
@@ -145,4 +157,10 @@ def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
         "source": source,
         "raw_score": int(scored.final_score),
         "alerted": scored.priority == "high",
+        "outcome": "open",
     }
+    if entry_price is not None:
+        record["entry_price"] = round(entry_price, 2)
+        record["price_now"] = round(entry_price, 2)
+        record["pnl_pct"] = 0.0
+    return record

@@ -92,21 +92,36 @@ sem números."""
 
     messages = [{"role": "user", "content": user}]
     final_text = ""
+    allowed = list(config.SOURCE_DOMAINS)
 
     for _ in range(max_turns):
-        response = client.messages.create(
-            model=config.CLAUDE_MODEL,
-            max_tokens=8000,
-            system=system,
-            tools=[
-                {
-                    **WEB_SEARCH_TOOL,
-                    "allowed_domains": config.SOURCE_DOMAINS,
-                    "max_uses": 10,
-                }
-            ],
-            messages=messages,
-        )
+        try:
+            response = client.messages.create(
+                model=config.CLAUDE_MODEL,
+                max_tokens=8000,
+                system=system,
+                tools=[
+                    {
+                        **WEB_SEARCH_TOOL,
+                        "allowed_domains": allowed,
+                        "max_uses": 10,
+                    }
+                ],
+                messages=messages,
+            )
+        except anthropic.BadRequestError as exc:
+            # Remove domínios bloqueados ao crawler e tenta de novo.
+            import re as _re
+            blocked = _re.findall(r"'([^']+)'", str(exc))
+            removed = [d for d in blocked if d in allowed]
+            if not removed:
+                raise
+            for d in removed:
+                allowed.remove(d)
+                print(f"[news_fetcher] domínio removido (bloqueado): {d}")
+            if not allowed:
+                return []
+            continue
 
         # Acumula texto produzido nesta volta.
         final_text = "".join(

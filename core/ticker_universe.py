@@ -84,20 +84,34 @@ JSON de símbolos (strings), no máximo {max_extra}. Sem texto à volta."""
 
     messages = [{"role": "user", "content": user}]
     final_text = ""
+    allowed = list(config.SOURCE_DOMAINS)
     for _ in range(6):
-        response = client.messages.create(
-            model=config.CLAUDE_MODEL,
-            max_tokens=4000,
-            tools=[
-                {
-                    "type": "web_search_20260209",
-                    "name": "web_search",
-                    "allowed_domains": config.SOURCE_DOMAINS,
-                    "max_uses": 8,
-                }
-            ],
-            messages=messages,
-        )
+        try:
+            response = client.messages.create(
+                model=config.CLAUDE_MODEL,
+                max_tokens=4000,
+                tools=[
+                    {
+                        "type": "web_search_20260209",
+                        "name": "web_search",
+                        "allowed_domains": allowed,
+                        "max_uses": 8,
+                    }
+                ],
+                messages=messages,
+            )
+        except anthropic.BadRequestError as exc:
+            import re as _re
+            blocked = _re.findall(r"'([^']+)'", str(exc))
+            removed = [d for d in blocked if d in allowed]
+            if not removed:
+                raise
+            for d in removed:
+                allowed.remove(d)
+                print(f"[ticker_universe] domínio removido (bloqueado): {d}")
+            if not allowed:
+                return []
+            continue
         final_text = "".join(
             b.text for b in response.content if getattr(b, "type", "") == "text"
         )
