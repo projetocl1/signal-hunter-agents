@@ -12,3 +12,6 @@ __pycache__/
 
 # Claude Code
 .claude/
+
+# Dashboard runtime
+.streamlit_pid

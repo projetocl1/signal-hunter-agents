@@ -1,0 +1,27 @@
+{
+  "name": "Signal Hunter Agents",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+
+  "forwardPorts": [8501, 8000],
+  "portsAttributes": {
+    "8501": {
+      "label": "Signal Hunter Dashboard",
+      "onAutoForward": "openBrowserOnce"
+    },
+    "8000": {
+      "label": "Signal Hunter API",
+      "onAutoForward": "silent"
+    }
+  },
+
+  "postStartCommand": "bash scripts/start_dashboard.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}
