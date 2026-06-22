@@ -570,3 +570,136 @@ if not df.empty:
                 st.caption("Tabela disponível após 10+ sinais fechados.")
     except Exception as e:
         st.caption(f"Performance cache indisponível: {e}")
+
+    st.divider()
+
+    # ── Backtest histórico ─────────────────────────────────────────────────
+    st.subheader("🔬 Backtest — Casos históricos reais")
+    st.caption("Eventos históricos documentados corridos pelo classificador e scorer do sistema, com P&L real via yfinance.")
+
+    try:
+        from core.backtest_engine import load_results
+        bt_data = load_results()
+
+        if not bt_data:
+            st.info(
+                "Nenhum backtest corrido ainda. Executa: `python -m scripts.run_backtest`"
+            )
+        else:
+            bt_df = pd.DataFrame(bt_data)
+
+            # KPIs do backtest
+            total = len(bt_df)
+            alerted = int((bt_df["would_alert"] == True).sum())
+            kept = int((bt_df["would_keep"] == True).sum())
+            hits = int((bt_df["hit"] == True).sum())
+            decided = int(bt_df["hit"].notna().sum())
+            hit_rate = hits / decided * 100 if decided > 0 else 0
+
+            bc1, bc2, bc3, bc4 = st.columns(4)
+            bc1.metric("Eventos testados", total)
+            bc2.metric("🔴 Teria alertado", f"{alerted} ({alerted/total*100:.0f}%)")
+            bc3.metric("🟡 Teria monitorizado", f"{kept} ({kept/total*100:.0f}%)")
+            bc4.metric("✅ Taxa de acerto real", f"{hit_rate:.0f}%", help=f"{hits} HITs em {decided} com resultado")
+
+            st.markdown("---")
+
+            # Tabela principal
+            show_cols = ["event_date", "ticker", "signal_type", "catalyst_strength",
+                         "final_score", "would_alert", "horizon", "durability_12h",
+                         "pnl_3d", "pnl_10d", "pnl_30d", "pnl_90d", "hit", "stopped"]
+            show_cols = [c for c in show_cols if c in bt_df.columns]
+            bt_display = bt_df[show_cols].copy()
+            bt_display = bt_display.rename(columns={
+                "event_date": "Data", "ticker": "Ticker", "signal_type": "Tipo",
+                "catalyst_strength": "Strength", "final_score": "Score",
+                "would_alert": "Alertaria?", "horizon": "Horizonte",
+                "durability_12h": "12h OK?",
+                "pnl_3d": "P&L 3d", "pnl_10d": "P&L 10d",
+                "pnl_30d": "P&L 30d", "pnl_90d": "P&L 90d",
+                "hit": "HIT?", "stopped": "STOP?",
+            })
+
+            def _pnl_color(val):
+                if pd.isna(val):
+                    return ""
+                return "color: #00C851; font-weight:bold" if val > 0 else "color: #FF4444"
+
+            def _hit_color(val):
+                if val is True:
+                    return "color: #00C851; font-weight:bold"
+                if val is False:
+                    return "color: #FF4444"
+                return ""
+
+            pnl_cols = [c for c in ["P&L 3d", "P&L 10d", "P&L 30d", "P&L 90d"] if c in bt_display.columns]
+            fmt_bt = {c: "{:+.1f}%" for c in pnl_cols}
+            styled_bt = bt_display.style.format(fmt_bt, na_rep="—")
+            for c in pnl_cols:
+                styled_bt = styled_bt.map(_pnl_color, subset=[c])
+            for c in ["HIT?", "STOP?"]:
+                if c in bt_display.columns:
+                    styled_bt = styled_bt.map(_hit_color, subset=[c])
+
+            st.dataframe(styled_bt, use_container_width=True, height=500)
+
+            st.markdown("---")
+            col_bt1, col_bt2 = st.columns(2)
+
+            # Gráfico: Score vs P&L real (10d)
+            with col_bt1:
+                st.markdown("**Score do sistema vs P&L real (10 dias)**")
+                if "pnl_10d" in bt_df.columns and "final_score" in bt_df.columns:
+                    scatter_df = bt_df[["ticker", "final_score", "pnl_10d", "signal_type", "hit"]].dropna(subset=["pnl_10d"])
+                    scatter_df["resultado"] = scatter_df["hit"].map({True: "HIT", False: "Miss/Stop"}).fillna("N/A")
+                    fig_sc = px.scatter(
+                        scatter_df,
+                        x="final_score",
+                        y="pnl_10d",
+                        color="resultado",
+                        text="ticker",
+                        color_discrete_map={"HIT": "#00C851", "Miss/Stop": "#FF4444", "N/A": "#9E9E9E"},
+                        labels={"final_score": "Score do sistema", "pnl_10d": "P&L real 10 dias (%)"},
+                    )
+                    fig_sc.add_hline(y=0, line_dash="dash", line_color="white", opacity=0.3)
+                    fig_sc.add_hline(y=8, line_dash="dot", line_color="#00C851", opacity=0.4,
+                                     annotation_text="threshold 10d")
+                    fig_sc.update_traces(textposition="top center")
+                    fig_sc.update_layout(margin=dict(t=10, b=10), height=320)
+                    st.plotly_chart(fig_sc, use_container_width=True)
+
+            # Gráfico: Hit rate por tipo
+            with col_bt2:
+                st.markdown("**Taxa de acerto por tipo de sinal (backtest)**")
+                if "signal_type" in bt_df.columns and "hit" in bt_df.columns:
+                    hr_bt = (
+                        bt_df[bt_df["hit"].notna()]
+                        .groupby("signal_type")
+                        .apply(lambda g: pd.Series({
+                            "hit_rate": (g["hit"] == True).mean() * 100,
+                            "total": len(g),
+                        }))
+                        .reset_index()
+                    )
+                    if not hr_bt.empty:
+                        hr_bt["emoji"] = hr_bt["signal_type"].map(TYPE_EMOJI).fillna("")
+                        hr_bt["label"] = hr_bt["emoji"] + " " + hr_bt["signal_type"]
+                        fig_hr = px.bar(
+                            hr_bt,
+                            x="label",
+                            y="hit_rate",
+                            color="hit_rate",
+                            color_continuous_scale=["#FF4444", "#FFD700", "#00C851"],
+                            range_color=[0, 100],
+                            text="hit_rate",
+                        )
+                        fig_hr.update_traces(texttemplate="%{text:.0f}%", textposition="outside")
+                        fig_hr.update_layout(
+                            margin=dict(t=10, b=10), height=320,
+                            coloraxis_showscale=False,
+                            xaxis_title="", yaxis_title="Hit rate (%)",
+                        )
+                        st.plotly_chart(fig_hr, use_container_width=True)
+
+    except Exception as e:
+        st.caption(f"Backtest indisponível: {e}")

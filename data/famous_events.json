@@ -1,0 +1,146 @@
+[
+  {
+    "event_date": "2023-05-24",
+    "ticker": "NVDA",
+    "headline": "NVDA Q1 FY2024 earnings: EPS $1.09 vs $0.92 est (+18% beat), Data Center revenue guidance $11B vs $7B consensus",
+    "source": "benzinga.com",
+    "notes": "Nvidia disparou +24.5% na sessão seguinte. O guidance de Data Center foi o maior beat vs consenso da década no sector de semicondutores. Iniciou a narrativa do AI supercycle. Analistas como Morgan Stanley elevaram target de $500 para $800+.",
+    "horizon": "30d"
+  },
+  {
+    "event_date": "2023-02-01",
+    "ticker": "META",
+    "headline": "META Q4 2022 earnings: EPS $1.76 vs $1.33 est (+32% beat), anuncia $40B buyback e 'Year of Efficiency'",
+    "source": "benzinga.com",
+    "notes": "Stock subiu +23% na sessão seguinte. Mark Zuckerberg declarou 2023 como o 'Year of Efficiency' com corte de 11.000 postos. Metaverse spending reduzido. Analistas reviraram de bearish para bullish em massa.",
+    "horizon": "30d"
+  },
+  {
+    "event_date": "2023-08-01",
+    "ticker": "PLTR",
+    "headline": "PLTR Q2 2023: primeiro trimestre lucrativo em GAAP, EPS $0.01 vs -$0.05 est, AI Platform (AIP) adoção acelerada",
+    "source": "globenewswire.com",
+    "notes": "Primeiro lucro GAAP da história da empresa. AI Platform (AIP) gerou 300+ clientes piloto em 3 semanas. Stock +28% na sessão seguinte. Analistas iniciaram cobertura com targets de $20-25.",
+    "horizon": "30d"
+  },
+  {
+    "event_date": "2023-09-14",
+    "ticker": "ARM",
+    "headline": "ARM Holdings IPO: Goldman Sachs, Morgan Stanley, Barclays iniciam cobertura com Buy, targets $60-68",
+    "source": "tipranks.com",
+    "notes": "ARM abriu a $56.10 após IPO a $51. Múltiplos analistas de topo iniciaram cobertura simultânea com Buy. Chip de AI narrative impulsionou múltiplos de 100x earnings. Stock chegou a $69 em 3 semanas.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2024-02-21",
+    "ticker": "NVDA",
+    "headline": "NVDA Q4 FY2024: EPS $5.16 vs $4.59 est, revenue $22.1B vs $20.4B, Q1 FY2025 guidance $24B vs $22B consenso",
+    "source": "benzinga.com",
+    "notes": "Segundo mega-beat consecutivo. H100 backlog estimado em 12 meses. Analistas elevaram targets para $800-1000. Stock +16% na sessão seguinte, ultrapassou $800 por acção.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2023-10-19",
+    "ticker": "GOOGL",
+    "headline": "CEO Sundar Pichai compra $12.8M em acções GOOGL — open market purchase Form 4",
+    "source": "openinsider.com",
+    "notes": "Compra em mercado aberto de CEO no valor de $12.8M, o maior purchase de Pichai desde 2019. Ocorreu 2 dias antes de earnings Q3 2023 (EPS +45% beat). Form 4 filed SEC. Stock +11% na semana seguinte.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2022-10-28",
+    "ticker": "UBER",
+    "headline": "CEO Dara Khosrowshahi compra $10M em acções UBER — open market purchase Form 4",
+    "source": "openinsider.com",
+    "notes": "CEO comprou $10M em acções a $25.12, com stock perto de mínimos de 52 semanas. Cluster buy: 3 executivos compraram no mesmo mês. Stock subiu +98% nos 12 meses seguintes, atingindo $49.57.",
+    "horizon": "90d"
+  },
+  {
+    "event_date": "2023-01-12",
+    "ticker": "AMD",
+    "headline": "Morgan Stanley upgrade AMD de Equal Weight para Overweight, target $100, cita MI300 GPU como AI wildcard",
+    "source": "tipranks.com",
+    "notes": "Morgan Stanley foi o primeiro grande banco a reconhecer MI300 como competidor viável do H100. Upgrade com raise de target de $68 para $100 (+47%). Desencadeou série de upgrades adicionais de JPM, Citi. Stock +52% nos 6 meses seguintes.",
+    "horizon": "30d"
+  },
+  {
+    "event_date": "2024-01-25",
+    "ticker": "SMCI",
+    "headline": "Super Micro Computer: Barclays e Loop Capital iniciam com Buy, targets $600-700, cita liderança em AI servers e liquid cooling",
+    "source": "benzinga.com",
+    "notes": "Múltiplas iniciations simultâneas de bancos de 2ª linha que reconheceram SMCI como principal beneficiário de AI capex. Stock estava a $285. Atingiu $1,229 em Março 2024 (+330%). Exemplo de rotação sectorial AI.",
+    "horizon": "30d"
+  },
+  {
+    "event_date": "2023-05-19",
+    "ticker": "NVDA",
+    "headline": "Options sweep: $50M em NVDA CALL $400 expiry Jun 16 2023 — OTM +15%, volume/OI 23x, multi-exchange sweep",
+    "source": "unusualwhales.com",
+    "notes": "5 dias antes do earnings beat histórico, fluxo de opções incomum: $50M em calls OTM com expiry a 4 semanas. Volume 23x o Open Interest. Sweep cruzado em CBOE, ISE, PHLX. Stock era $305 — calls tornaram-se +400% em 5 dias.",
+    "horizon": "3d"
+  },
+  {
+    "event_date": "2024-03-07",
+    "ticker": "MRVL",
+    "headline": "Marvell Technology: Goldman Sachs eleva target de $80 para $100 (+25%), cita custom AI ASIC pipeline com Amazon e Microsoft",
+    "source": "tipranks.com",
+    "notes": "Goldman foi o 4º banco em 2 semanas a elevar target de MRVL com o mesmo catalisador: custom AI chips (XPUs) para hyperscalers. Stock subiu de $75 para $92 (+23%) em 3 semanas após upgrade.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2023-11-02",
+    "ticker": "TSLA",
+    "headline": "TSLA Q3 2023 earnings: EPS $0.66 vs $0.74 est — miss de 11%, margens auto 17.9% vs 18.1% est",
+    "source": "benzinga.com",
+    "notes": "Earnings miss com compressão de margem. Elon Musk não deu guidance para Q4. Stock caiu -9% na sessão seguinte. Caso negativo: o sistema deveria ter dado score < 6 e descartado.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2024-05-23",
+    "ticker": "NVDA",
+    "headline": "NVDA Q1 FY2025: EPS $6.12 vs $5.59 est, revenue $26.0B vs $24.5B, Q2 guidance $28B vs $26.6B consenso",
+    "source": "benzinga.com",
+    "notes": "Terceiro mega-beat consecutivo. Blackwell GPU demand descrito como 'insane'. Declaração de dividendo de 10:1 stock split. Stock +9.3% no after-hours. CEO Jensen Huang comparou ao iPhone moment da AI.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2023-06-05",
+    "ticker": "AAPL",
+    "headline": "Apple anuncia Vision Pro headset a $3,499 na WWDC — novo produto de realidade mista",
+    "source": "prnewswire.com",
+    "notes": "Produto sem guidance de receita. Preço $3,499 muito acima do esperado ($2,000-2,500). Sem data de volumes. Stock subiu apenas +0.8% no dia. Caso borderline: sem números concretos de revenue = durability baixa. O sistema deveria ter classificado strength 4-5.",
+    "horizon": "3d"
+  },
+  {
+    "event_date": "2024-08-05",
+    "ticker": "QQQ",
+    "headline": "Macro: unwinding do carry trade yen, recession fears, Buffett vende metade da posição AAPL — crash de mercado",
+    "source": "marketwatch.com",
+    "notes": "NASDAQ caiu -3.4% no dia, -6% na semana. Nenhum catalisador sectorial positivo. Caso macro negativo: o sistema deve filtrar e não gerar sinais de entrada durante crashes sistémicos. Score esperado < 6 para qualquer sinal bullish nesse dia.",
+    "horizon": "3d"
+  },
+  {
+    "event_date": "2023-10-26",
+    "ticker": "META",
+    "headline": "META Q3 2023: EPS $4.39 vs $3.63 est (+21% beat), revenue $34.1B +23% YoY, Q4 guidance $38.5-40B vs $38.5B est",
+    "source": "benzinga.com",
+    "notes": "Segundo trimestre consecutivo de 'efficiency'. Threads crescendo. AI Ads optimizer melhorou ROI dos anunciantes 20%+. Stock +3.9% no after-hours, depois +4.7% na sessão. Menos explosivo que Feb 2023 mas confirma tendência.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2024-02-07",
+    "ticker": "PLTR",
+    "headline": "PLTR Q4 2023: EPS $0.08 vs $0.04 est (+100% beat), US commercial revenue +70% YoY, eleva guidance FY2024",
+    "source": "globenewswire.com",
+    "notes": "AIP (AI Platform) gerou aceleração explosiva no segmento comercial US. Primeiro ano completo de lucro GAAP. Stock +30% na sessão seguinte — maior ganho diário da história da empresa.",
+    "horizon": "10d"
+  },
+  {
+    "event_date": "2022-11-30",
+    "ticker": "MSFT",
+    "headline": "Microsoft anuncia integração do ChatGPT (OpenAI) no Azure, Bing e Office 365 — investimento de $10B confirmado",
+    "source": "globenewswire.com",
+    "notes": "O anúncio que iniciou o rally de AI stocks. MSFT subiu +3% no dia mas a narrativa propagou-se durante meses. NVDA, AMD, SMCI foram os maiores beneficiários indirectos. Caso de macro/rotação sectorial que o sistema deve identificar como catalisador de rotação.",
+    "horizon": "30d"
+  }
+]
