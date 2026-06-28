@@ -21,11 +21,16 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
+      - name: Sanitizar secrets (remover newlines)
+        run: |
+          ANTHROPIC_CLEAN=$(echo "${{ secrets.ANTHROPIC_API_KEY }}" | tr -d '\n\r' | xargs)
+          AIRTABLE_TOKEN_CLEAN=$(echo "${{ secrets.AIRTABLE_TOKEN }}" | tr -d '\n\r' | xargs)
+          AIRTABLE_BASE_CLEAN=$(echo "${{ secrets.AIRTABLE_BASE_ID }}" | tr -d '\n\r' | xargs)
+          echo "ANTHROPIC_API_KEY=${ANTHROPIC_CLEAN}" >> $GITHUB_ENV
+          echo "AIRTABLE_TOKEN=${AIRTABLE_TOKEN_CLEAN}" >> $GITHUB_ENV
+          echo "AIRTABLE_BASE_ID=${AIRTABLE_BASE_CLEAN}" >> $GITHUB_ENV
+
       - name: Correr close_scan (scan + briefing)
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         run: python -m agents.close_scan
 
       - name: Commitar briefing diário
