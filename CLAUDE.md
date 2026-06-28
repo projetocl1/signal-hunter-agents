@@ -2,85 +2,85 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this is
+## O que é este repositório
 
-Autonomous market catalyst tracking system for NASDAQ/NYSE swing trading. Three scheduled agents (morning/afternoon/close) run via GitHub Actions, each executing the same shared pipeline. Signals are stored in a dedicated Airtable base; the close scan also commits a daily markdown briefing to `briefings/`.
+Sistema autónomo de rastreamento de catalisadores de mercado para swing trading NASDAQ/NYSE. Três agentes agendados (morning/afternoon/close) correm via GitHub Actions, cada um executando o mesmo pipeline partilhado. Os sinais são guardados numa base Airtable dedicada; o close scan também commita um briefing diário em markdown em `briefings/`.
 
-## Commands
+## Comandos
 
 ```bash
-# Install
+# Instalar dependências
 pip install -r requirements.txt
 
-# Run tests (offline, no credentials needed)
+# Correr os testes (offline, sem credenciais)
 python -m unittest discover -s tests -v
 
-# Run a single test file
+# Correr um único ficheiro de testes
 python -m unittest tests.test_durability -v
 
-# Validate credentials + external services before activating schedulers
+# Validar credenciais + serviços externos antes de activar os schedulers
 python -m scripts.validate_setup
 
-# Run an agent manually (requires credentials in env)
+# Correr um agente manualmente (requer credenciais no env)
 python -m agents.morning_scan
 python -m agents.afternoon_scan
 python -m agents.close_scan
 ```
 
-No linter or formatter is configured; no build step.
+Não há linter, formatter nem passo de build configurados.
 
-## Architecture
+## Arquitectura
 
-### Pipeline (shared — `agents/__init__.py:run_scan`)
+### Pipeline partilhado — `agents/__init__.py:run_scan`
 
 ```
 get_universe → fetch_news → classify → evaluate → detect_convergence → write_signal
 ```
 
-Every agent calls `run_scan(focus, expand, max_items)`. The `focus` string drives what the web search agent looks for; `expand=True` (morning only) adds dynamic tickers via a second web search round.
+Cada agente chama `run_scan(focus, expand, max_items)`. O argumento `focus` orienta o que o agente de web search procura; `expand=True` (apenas no morning) acrescenta tickers dinâmicos via uma segunda ronda de web search.
 
-### Module responsibilities
+### Responsabilidades dos módulos
 
-| Module | Role |
+| Módulo | Responsabilidade |
 |---|---|
-| `core/config.py` | Single source of truth for all tuneable constants: scoring thresholds, source allowlist, universe criteria, signal types |
-| `core/news_fetcher.py` | Calls Claude API with `web_search_20260209` tool; handles `pause_turn` loop; returns raw candidate dicts |
-| `core/classifier.py` | Calls `client.messages.parse()` with a Pydantic schema (`Classification`) for guaranteed-valid JSON output |
-| `core/durability_check.py` | Pure function `evaluate(signal, convergence)` → `ScoredSignal`; no I/O |
-| `core/airtable_writer.py` | Airtable REST client: `detect_convergence()` (reads), `write_signal()` (writes), `recent_signals()` (for briefing) |
-| `core/ticker_universe.py` | Static Nasdaq 100 base + best-effort dynamic expansion via web search |
-| `core/briefing.py` | Pure markdown builder; `close_scan` calls `write_briefing()` which commits to `briefings/` |
+| `core/config.py` | Fonte única de verdade para todas as constantes ajustáveis: thresholds de scoring, allowlist de fontes, critérios do universo, tipos de sinal |
+| `core/news_fetcher.py` | Chama a Claude API com a ferramenta `web_search_20260209`; gere o loop `pause_turn`; devolve dicts de candidatos em bruto |
+| `core/classifier.py` | Chama `client.messages.parse()` com schema Pydantic (`Classification`) para output JSON sempre válido |
+| `core/durability_check.py` | Função pura `evaluate(signal, convergence)` → `ScoredSignal`; sem I/O |
+| `core/airtable_writer.py` | Cliente REST do Airtable: `detect_convergence()` (leitura), `write_signal()` (escrita), `recent_signals()` (para o briefing) |
+| `core/ticker_universe.py` | Base estática Nasdaq 100 + expansão dinâmica best-effort via web search |
+| `core/briefing.py` | Construtor puro de markdown; o `close_scan` chama `write_briefing()` que guarda em `briefings/` |
 
-### Scoring rules (all constants in `core/config.py`)
+### Regras de scoring (todas as constantes em `core/config.py`)
 
-1. `durability_12h = false` → **always discard**, regardless of score
-2. Base score = `catalyst_strength` (1–10, from Claude classifier)
+1. `durability_12h = false` → **descarta sempre**, independentemente do score
+2. Score base = `catalyst_strength` (1–10, dado pelo classificador Claude)
 3. `convergence_detected = true` → **+3** (`CONVERGENCE_BONUS`)
-4. `final_score >= 8` → high priority (`alerted=True` in Airtable)
-5. `final_score 6–7` → monitor
-6. `final_score < 6` → discard
+4. `final_score >= 8` → alta prioridade (`alerted=True` no Airtable)
+5. `final_score 6–7` → monitorização
+6. `final_score < 6` → descarta
 
-**Convergence is authoritative from Airtable, not from the model.** `classifier.py` produces a `convergence_detected` estimate, but `run_scan` always overwrites it with the result of `AirtableClient.detect_convergence()`. Two *different* signal types on the same ticker within 48h (`distinct_types=True`) forces `priority = "high"` regardless of score.
+**A convergência autoritativa vem do Airtable, não do modelo.** O `classifier.py` produz uma estimativa `convergence_detected`, mas o `run_scan` sobrepõe-na sempre com o resultado de `AirtableClient.detect_convergence()`. Dois tipos de sinal *diferentes* no mesmo ticker em 48h (`distinct_types=True`) força `priority = "high"` independentemente do score.
 
-### Claude API usage patterns
+### Padrões de uso da Claude API
 
-- **News fetching** (`news_fetcher.py`): `client.messages.create()` with `web_search_20260209` tool, `allowed_domains` restricted to `config.SOURCE_DOMAINS`. Handles `stop_reason == "pause_turn"` by re-appending the assistant turn and looping (up to `max_turns=6`).
-- **Classification** (`classifier.py`): `client.messages.parse()` with `output_format=Classification` (Pydantic). Returns `response.parsed_output`; raises `RuntimeError` if `None`.
-- **Universe expansion** (`ticker_universe.py`): same web search pattern as news fetching; failures are caught and swallowed (`best-effort`).
+- **Recolha de notícias** (`news_fetcher.py`): `client.messages.create()` com ferramenta `web_search_20260209`, `allowed_domains` restrito a `config.SOURCE_DOMAINS`. Trata `stop_reason == "pause_turn"` reenviando o turno do assistente e repetindo (até `max_turns=6`).
+- **Classificação** (`classifier.py`): `client.messages.parse()` com `output_format=Classification` (Pydantic). Devolve `response.parsed_output`; lança `RuntimeError` se `None`.
+- **Expansão do universo** (`ticker_universe.py`): mesmo padrão de web search que a recolha de notícias; falhas são apanhadas e ignoradas (best-effort).
 
-### External dependencies
+### Dependências externas
 
-- **Anthropic API**: classification + web search. Model defaults to `claude-opus-4-8`, overridable via `CLAUDE_MODEL` env var.
-- **Airtable REST API** (`https://api.airtable.com/v0`): uses `typecast: true` on writes so single-select values are created automatically. Table name defaults to `catalyst_signals`.
-- No database, no broker, no market data feed — all market data comes through Claude's web search.
+- **Anthropic API**: classificação + web search. Modelo por defeito `claude-opus-4-8`, substituível via variável `CLAUDE_MODEL`.
+- **Airtable REST API** (`https://api.airtable.com/v0`): usa `typecast: true` nas escritas para criar automaticamente valores de single-select. Nome da tabela por defeito `catalyst_signals`.
+- Sem base de dados própria, sem broker, sem feed de mercado — todos os dados de mercado chegam através do web search da Claude.
 
 ### GitHub Actions
 
-Three workflows (`morning.yml`, `afternoon.yml`, `close.yml`) all require three secrets: `ANTHROPIC_API_KEY`, `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`. All support `workflow_dispatch` for manual runs. `close.yml` has `permissions: contents: write` to commit the daily briefing.
+Três workflows (`morning.yml`, `afternoon.yml`, `close.yml`) requerem três secrets: `ANTHROPIC_API_KEY`, `AIRTABLE_TOKEN`, `AIRTABLE_BASE_ID`. Todos suportam `workflow_dispatch` para execução manual. O `close.yml` tem `permissions: contents: write` para commitar o briefing diário.
 
-## Key invariants
+## Invariantes importantes
 
-- This repo shares **zero code and zero Airtable base** with `pharma-intel-agents`. Never reference or import from that repo.
-- The `briefings/` directory is committed to git by the `close_scan` GitHub Actions workflow automatically.
-- The Nasdaq 100 list in `ticker_universe.py` is a static snapshot and should be refreshed periodically.
-- Web search cost: each scan fires up to 10 web search calls (`max_uses=10`). Keep `max_items` and `max_turns` limits in mind when changing fetch behaviour.
+- Este repositório partilha **zero código e zero base Airtable** com o `pharma-intel-agents`. Nunca referenciar nem importar desse repositório.
+- O directório `briefings/` é commitado ao git automaticamente pelo workflow do `close_scan`.
+- A lista Nasdaq 100 em `ticker_universe.py` é um snapshot estático e deve ser refrescada periodicamente.
+- Custo de web search: cada scan dispara até 10 chamadas de web search (`max_uses=10`). Ter em conta os limites `max_items` e `max_turns` ao alterar o comportamento de recolha.
