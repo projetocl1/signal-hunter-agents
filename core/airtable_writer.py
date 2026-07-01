@@ -171,6 +171,15 @@ def _enrich_headline(signal: dict) -> str:
     return base
 
 
+def _position_size(score: int) -> tuple[float, str]:
+    """Devolve (position_size_pct, sizing_label) baseado no score final."""
+    if score >= 10:
+        return 3.0, "3% — Máx convicção (score 10+)"
+    if score >= 8:
+        return 2.0, "2% — Alta prioridade (score 8-9)"
+    return 1.0, "1% — Monitor (score 6-7)"
+
+
 def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
     """
     Constrói o dict de campos do Airtable a partir de um sinal classificado
@@ -178,6 +187,7 @@ def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
     """
     ticker = signal.get("ticker", "")
     entry_price = _fetch_price(ticker)
+    size_pct, size_label = _position_size(scored.final_score)
     record: dict = {
         "date": datetime.now(timezone.utc).isoformat(),
         "ticker": ticker,
@@ -191,6 +201,8 @@ def build_record(signal: dict, scored, convergence: bool, source: str) -> dict:
         "raw_score": int(scored.final_score),
         "alerted": scored.priority == "high",
         "outcome": "open",
+        "position_size_pct": size_pct,
+        "sizing_label": size_label,
     }
     if entry_price is not None:
         record["entry_price"] = round(entry_price, 2)
