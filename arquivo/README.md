@@ -11,7 +11,7 @@
 | [`00-inventario-ligacoes.md`](00-inventario-ligacoes.md) | Connectors claude.ai, bases Airtable, Supabase, ambiente cloud, secrets |
 | [`01-sistema-v1-codigo/`](01-sistema-v1-codigo/) | Código completo do sistema v1, recuperado do commit `9b1ad69` |
 | [`02-execucoes-github-actions.csv`](02-execucoes-github-actions.csv) | Todas as 55 execuções do GitHub Actions (data, workflow, resultado, link) |
-| [`03-prs-abertos/`](03-prs-abertos/) | Conteúdo dos 2 PRs que continuam abertos (#2 e #4) |
+| [`03-prs-abertos/`](03-prs-abertos/) | Conteúdo dos PRs #2 e #4 (fechados em 2026-11-09) |
 | [`04-tarefas-e-historico.md`](04-tarefas-e-historico.md) | Linha temporal, tarefas agendadas e PRs |
 | [`05-analise-e-licoes.md`](05-analise-e-licoes.md) | O que falhou, porquê, e o que fazer no próximo sistema |
 | [`06-reset-e-novas-ligacoes.md`](06-reset-e-novas-ligacoes.md) | **Guia de reset + criação de chaves/ligações (com registo)** |

@@ -32,8 +32,8 @@ não garante a hora certa em repositórios com pouca actividade.
 | 2026-06-18 → 07-05 | 54 execuções agendadas, **todas falhadas** |
 | 2026-06-28 | PR #2 aberto: correcção para limpar newlines dos secrets. **Nunca mergeado** |
 | 2026-07-06 | PR #3: reset, código removido e registos Airtable limpos |
-| 2026-09-05 | PR #4 aberto: glossário Git/GitHub (docs). **Por decidir** |
-| 2026-11-09 | Este arquivo criado |
+| 2026-09-05 | PR #4 aberto: glossário Git/GitHub (docs) |
+| 2026-11-09 | Arquivo criado · PRs #2 e #4 fechados · decisão de reset total |
 
 ## Pull requests
 
@@ -44,4 +44,4 @@ não garante a hora certa em repositórios com pouca actividade.
 | [#3](https://github.com/projetocl1/signal-hunter-agents/pull/3) | reset | mergeado |
 | [#4](https://github.com/projetocl1/signal-hunter-agents/pull/4) | glossário Git/GitHub | fechado 2026-11-09 (conteúdo no arquivo) |
 
-Conteúdo dos PRs abertos: [`03-prs-abertos/`](03-prs-abertos/).
+Conteúdo dos PRs #2 e #4: [`03-prs-abertos/`](03-prs-abertos/).
