@@ -126,7 +126,7 @@ Só depois disto se criam os agentes agendados (lição n.º 1 e n.º 2 do fiche
 | | 1.6 Connectors | | | |
 | | 1.7 Ambientes | | | |
 | | 2.1 Repo novo | | | |
-| | 2.2 Chave Anthropic | | | |
+| 2026-11-09 | 2.2 Chave Anthropic | KJsuited | (nome por preencher) | criada; falta guardar no gestor de passwords e colocar no repo novo |
 | | 2.3 Supabase | | | |
 | | 2.4 Secrets repo novo | | | |
 | | 2.5 Health check | | | |
