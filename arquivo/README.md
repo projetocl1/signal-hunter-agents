@@ -14,6 +14,7 @@
 | [`03-prs-abertos/`](03-prs-abertos/) | Conteúdo dos 2 PRs que continuam abertos (#2 e #4) |
 | [`04-tarefas-e-historico.md`](04-tarefas-e-historico.md) | Linha temporal, tarefas agendadas e PRs |
 | [`05-analise-e-licoes.md`](05-analise-e-licoes.md) | O que falhou, porquê, e o que fazer no próximo sistema |
+| [`06-reset-e-novas-ligacoes.md`](06-reset-e-novas-ligacoes.md) | **Guia de reset + criação de chaves/ligações (com registo)** |
 
 ## Resumo em 5 linhas
 

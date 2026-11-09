@@ -40,8 +40,8 @@ não garante a hora certa em repositórios com pouca actividade.
 | PR | Título | Estado |
 |---|---|---|
 | [#1](https://github.com/projetocl1/signal-hunter-agents/pull/1) | sistema de rastreamento de catalisadores | mergeado |
-| [#2](https://github.com/projetocl1/signal-hunter-agents/pull/2) | sanitize secrets | **aberto, obsoleto** (os workflows que corrige já não existem) |
+| [#2](https://github.com/projetocl1/signal-hunter-agents/pull/2) | sanitize secrets | fechado 2026-11-09 (obsoleto) |
 | [#3](https://github.com/projetocl1/signal-hunter-agents/pull/3) | reset | mergeado |
-| [#4](https://github.com/projetocl1/signal-hunter-agents/pull/4) | glossário Git/GitHub | **aberto** |
+| [#4](https://github.com/projetocl1/signal-hunter-agents/pull/4) | glossário Git/GitHub | fechado 2026-11-09 (conteúdo no arquivo) |
 
 Conteúdo dos PRs abertos: [`03-prs-abertos/`](03-prs-abertos/).
